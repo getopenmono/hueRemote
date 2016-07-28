@@ -1,0 +1,13 @@
+
+build
+sim/build
+DerivedData
+*.xcodeproj
+*.elf
+sim/Debug
+moc_*
+*.plist
+*.stash
+mono_project.map
+sim/sd
+
