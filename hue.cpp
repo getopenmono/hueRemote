@@ -8,7 +8,7 @@ const char *HueLight::briFormat = "http://%s/api/%s/lights/%i/state?method=PUT&b
 HueLight::HueLight(String ip, String userName, int lampNumber)
 {
     lampNo = lampNumber;
-    hueIp = "10.0.41.190";
+    hueIp = ip;
     username = userName;
 }
 
@@ -36,6 +36,14 @@ void HueLight::setState(bool on)
 {
     const char *state = on ? "true" : "false";
     String url = String::Format(stateFormat, hueIp(), username(), lampNo, state);
+    printf("Querying: %s\r\n", url());
+    client = network::HttpClient(url);
+}
+
+void HueLight::setBrightness(uint8_t bright)
+{
+    debug("set brightness to %u\r\n",bright);
+    String url = String::Format(briFormat, hueIp(), username(), lampNo, bright);
     printf("Querying: %s\r\n", url());
     client = network::HttpClient(url);
 }

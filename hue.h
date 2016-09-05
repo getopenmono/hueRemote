@@ -2,7 +2,6 @@
 #define __hue_h__
 
 #include <mono.h>
-#include <http_client.h>
 
 using namespace mono;
 
@@ -12,9 +11,7 @@ class HueLight
     String hueIp;
     String username;
 
-#ifndef EMUNO
     network::HttpClient client;
-#endif
 
     static const char *stateRegex;
     static const char *briRegex;
