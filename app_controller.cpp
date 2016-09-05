@@ -25,6 +25,15 @@ void HeaderView::repaint()
     txtView.repaint();
 }
 
+void Toucher::RespondTouchBegin(TouchEvent &event)
+{
+    event.handled = false;
+    touchHandler.call();
+}
+
+
+const int AppController::dimBrightness = 40;
+
 AppController::AppController() :
     messageLbl(Rect(0,200,176,20),""),
     hueHead(Rect(0,0,176,30),"hue"),
@@ -33,7 +42,9 @@ AppController::AppController() :
     calBtn(Rect(150,5,21,21),"")
 //    ,fs(SD_SPI_MOSI, SD_SPI_MISO, SD_SPI_CLK, SD_SPI_CS, "sd")
     ,spi(RP_SPI_MOSI, RP_SPI_MISO, RP_SPI_CLK),
-    spiComm(spi, RP_SPI_CS, RP_nRESET, RP_INTERRUPT)
+    spiComm(spi, RP_SPI_CS, RP_nRESET, RP_INTERRUPT),
+    dimmer(1*60*1000, true),
+    sleeper(10*1000, true)
 {
     allGood = false;
 
@@ -59,6 +70,10 @@ AppController::AppController() :
     calBtn.show();
 
     calView.setCalibrationDoneCallback<AppController>(this, &AppController::touchCalEnded);
+
+    dimmer.setCallback<AppController>(this, &AppController::dim);
+    sleeper.setCallback(IApplicationContext::EnterSleepMode);
+    toucher.touchHandler.attach<AppController>(this, &AppController::undim);
 }
 
 void AppController::monoWakeFromReset()
@@ -117,6 +132,9 @@ void AppController::monoWakeFromReset()
     }
     else
         messageLbl.setText("Wifi error!");
+
+    dimmer.Start();
+    toucher.Activate();
 }
 
 void AppController::wifiReady()
@@ -165,6 +183,26 @@ void AppController::touchCalEnded()
         stateBtn.show();
         bWell.show();
     }
+}
+
+void AppController::dim()
+{
+    dimmer.Stop();
+    IDisplayController * display = IApplicationContext::Instance->DisplayController;
+    for (int i = display->Brightness(); i >= dimBrightness; --i)
+    {
+        display->setBrightness(i);
+        wait_ms(2);
+    }
+    sleeper.Start();
+}
+
+void AppController::undim()
+{
+    sleeper.Stop();
+    display::IDisplayController *ctrl = IApplicationContext::Instance->DisplayController;
+    ctrl->setBrightness(255);
+    dimmer.Start();
 }
 
 void AppController::monoWillGotoSleep()

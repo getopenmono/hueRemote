@@ -57,6 +57,15 @@ public:
     void repaint();
 };
 
+class Toucher : public mono::TouchResponder
+{
+public:
+
+    mbed::FunctionPointer touchHandler;
+
+    void RespondTouchBegin(TouchEvent &event);
+};
+
 class AppController : public mono::IApplication {
 
     BackgroundView bgView;
@@ -74,6 +83,10 @@ class AppController : public mono::IApplication {
     HueLight *hue;
     bool allGood;
 
+    static const int dimBrightness;
+    Timer dimmer, sleeper;
+    Toucher toucher;
+
 public:
 
     AppController();
@@ -83,6 +96,9 @@ public:
     void clearMessage();
     void beginTouchCal();
     void touchCalEnded();
+
+    void dim();
+    void undim();
 
     void monoWakeFromReset();
     void monoWillGotoSleep();
